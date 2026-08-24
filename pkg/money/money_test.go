@@ -99,9 +99,9 @@ func TestParse(t *testing.T) {
 
 func TestDivideRoundUp(t *testing.T) {
 	tests := []struct {
-		amount      CLP
+		amount       CLP
 		installments int
-		expected    CLP
+		expected     CLP
 	}{
 		{100000, 1, 100000},
 		{100000, 2, 50000},
@@ -122,9 +122,9 @@ func TestDivideRoundUp(t *testing.T) {
 
 func TestTotalWithInterest(t *testing.T) {
 	tests := []struct {
-		amount    int64
-		rate      float64
-		expected  CLP
+		amount   int64
+		rate     float64
+		expected CLP
 	}{
 		{100000, 0, 100000},
 		{100000, 0.15, 115000},

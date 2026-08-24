@@ -2,21 +2,24 @@ package handler
 
 import (
 	"encoding/json"
+	"freek/internal/calculation/service"
 	"net/http"
 	"strconv"
 
-	"freek/internal/calculation/service"
 	"github.com/gorilla/mux"
 )
 
+// ProjectionHandler handles HTTP requests for credit charge projections.
 type ProjectionHandler struct {
 	projectionService *service.ProjectionService
 }
 
+// NewProjectionHandler creates a new ProjectionHandler.
 func NewProjectionHandler(ps *service.ProjectionService) *ProjectionHandler {
 	return &ProjectionHandler{projectionService: ps}
 }
 
+// Project handles GET requests simulating upcoming installment charges per card or across all cards.
 func (h *ProjectionHandler) Project(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -58,5 +61,7 @@ func (h *ProjectionHandler) Project(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(result) //nolint:errcheck // response already committed
 }

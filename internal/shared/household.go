@@ -1,3 +1,4 @@
+// Package shared provides cross-context HTTP middleware.
 package shared
 
 import (
@@ -7,10 +8,14 @@ import (
 	"strings"
 )
 
+// contextKey is the private key type for context values.
 type contextKey string
 
+// HouseholdIDKey is the context key carrying the scoped household ID.
 const HouseholdIDKey contextKey = "household_id"
 
+// HouseholdContext extracts the household scope from the query string or path
+// and stores it in the request context.
 func HouseholdContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var householdID int64
@@ -47,6 +52,7 @@ func HouseholdContext(next http.Handler) http.Handler {
 	})
 }
 
+// GetHouseholdID returns the scoped household ID from ctx, or 0 when absent.
 func GetHouseholdID(ctx context.Context) int64 {
 	if id, ok := ctx.Value(HouseholdIDKey).(int64); ok {
 		return id

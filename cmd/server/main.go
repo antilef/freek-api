@@ -1,6 +1,8 @@
+// Package main wires repositories, services, handlers, and routes.
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -36,9 +38,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		log.Fatal("Failed to ping database:", err)
 	}
 	log.Println("Connected to database")
@@ -48,7 +50,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to create migrate instance:", err)
 	}
-	defer m.Close()
+	defer func() { _, _ = m.Close() }()
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal("Failed to run migrations:", err)
@@ -87,10 +89,11 @@ func main() {
 	api := r.PathPrefix("/api/v1").Subrouter()
 
 	// Health check
-	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+		// Response already committed; nothing useful to do on write failure.
+		json.NewEncoder(w).Encode(map[string]string{"status": "ok"}) //nolint:errcheck // response already committed
 	}).Methods("GET")
 
 	// Household routes

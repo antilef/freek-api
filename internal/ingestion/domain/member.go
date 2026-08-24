@@ -2,6 +2,7 @@ package domain
 
 import "time"
 
+// Member ...
 type Member struct {
 	ID          int64     `json:"id"`
 	HouseholdID int64     `json:"household_id"`

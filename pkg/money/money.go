@@ -1,3 +1,4 @@
+// Package money provides integer CLP amounts and installment math.
 package money
 
 import (
@@ -7,16 +8,19 @@ import (
 	"strings"
 )
 
+// CLP ...
 type CLP int64
 
 func (m CLP) String() string {
 	return "$" + FormatDots(int64(m))
 }
 
+// Int64 ...
 func (m CLP) Int64() int64 {
 	return int64(m)
 }
 
+// FormatDots ...
 func FormatDots(n int64) string {
 	negative := false
 	if n < 0 {
@@ -47,6 +51,7 @@ func FormatDots(n int64) string {
 	return joined
 }
 
+// Parse ...
 func Parse(s string) (CLP, error) {
 	s = strings.TrimSpace(s)
 	s = strings.TrimPrefix(s, "$")
@@ -60,6 +65,7 @@ func Parse(s string) (CLP, error) {
 	return CLP(n), nil
 }
 
+// DivideRoundUp ...
 func DivideRoundUp(amount CLP, installments int) CLP {
 	if installments <= 0 {
 		return amount
@@ -72,6 +78,7 @@ func DivideRoundUp(amount CLP, installments int) CLP {
 	return CLP(perInstallment)
 }
 
+// TotalWithInterest ...
 func TotalWithInterest(amountCLP int64, interestRate float64) CLP {
 	if interestRate <= 0 {
 		return CLP(amountCLP)
@@ -79,6 +86,7 @@ func TotalWithInterest(amountCLP int64, interestRate float64) CLP {
 	return CLP(math.Round(float64(amountCLP) * (1 + interestRate)))
 }
 
+// MonthlyInstallment ...
 func MonthlyInstallment(total CLP, installments int) CLP {
 	return DivideRoundUp(total, installments)
 }

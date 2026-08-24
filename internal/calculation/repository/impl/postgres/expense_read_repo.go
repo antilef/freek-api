@@ -1,3 +1,4 @@
+// Package postgres implements calculation read repositories over PostgreSQL.
 package postgres
 
 import (
@@ -10,14 +11,17 @@ import (
 	"time"
 )
 
+// ExpenseReadRepo ...
 type ExpenseReadRepo struct {
 	db *sql.DB
 }
 
+// NewExpenseReadRepo ...
 func NewExpenseReadRepo(db *sql.DB) *ExpenseReadRepo {
 	return &ExpenseReadRepo{db: db}
 }
 
+// ListForProjection lists active credit expenses for projection.
 func (r *ExpenseReadRepo) ListForProjection(ctx context.Context, householdID int64, cardID *int64) ([]domain.SettlementExpense, error) {
 	query := `SELECT id, description, amount_clp, installments, interest_rate, purchase_date
 		FROM expenses WHERE household_id = $1 AND payment_type = 'credit' AND status = 'active'`
@@ -35,7 +39,7 @@ func (r *ExpenseReadRepo) ListForProjection(ctx context.Context, householdID int
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var expenses []domain.SettlementExpense
 	for rows.Next() {
@@ -52,9 +56,13 @@ func (r *ExpenseReadRepo) ListForProjection(ctx context.Context, householdID int
 		e.Amount = int64(total)
 		expenses = append(expenses, e)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return expenses, nil
 }
 
+// ListByPeriod lists expenses matching the read filter.
 func (r *ExpenseReadRepo) ListByPeriod(ctx context.Context, filter calcRepo.ExpenseReadFilter) ([]domain.SettlementExpense, error) {
 	query := `SELECT e.id, e.description, e.amount_clp, e.payment_type, e.member_id, COALESCE(m.name, '') as member_name
 		FROM expenses e
@@ -94,7 +102,7 @@ func (r *ExpenseReadRepo) ListByPeriod(ctx context.Context, filter calcRepo.Expe
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var expenses []domain.SettlementExpense
 	for rows.Next() {
@@ -107,9 +115,13 @@ func (r *ExpenseReadRepo) ListByPeriod(ctx context.Context, filter calcRepo.Expe
 		}
 		expenses = append(expenses, e)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return expenses, nil
 }
 
+// SummaryByCategory totals expenses per category.
 func (r *ExpenseReadRepo) SummaryByCategory(ctx context.Context, filter calcRepo.ExpenseReadFilter) ([]calcRepo.SummaryItem, error) {
 	query := `SELECT e.category_id, COALESCE(c.name, 'Sin categoría') as category_name, SUM(e.amount_clp) as total
 		FROM expenses e
@@ -134,7 +146,7 @@ func (r *ExpenseReadRepo) SummaryByCategory(ctx context.Context, filter calcRepo
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var items []calcRepo.SummaryItem
 	for rows.Next() {
@@ -144,9 +156,13 @@ func (r *ExpenseReadRepo) SummaryByCategory(ctx context.Context, filter calcRepo
 		}
 		items = append(items, item)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return items, nil
 }
 
+// SummaryByMember totals expenses per member.
 func (r *ExpenseReadRepo) SummaryByMember(ctx context.Context, filter calcRepo.ExpenseReadFilter) ([]calcRepo.SummaryItem, error) {
 	query := `SELECT e.member_id, COALESCE(m.name, 'Sin titular') as member_name, SUM(e.amount_clp) as total
 		FROM expenses e
@@ -171,7 +187,7 @@ func (r *ExpenseReadRepo) SummaryByMember(ctx context.Context, filter calcRepo.E
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var items []calcRepo.SummaryItem
 	for rows.Next() {
@@ -180,6 +196,9 @@ func (r *ExpenseReadRepo) SummaryByMember(ctx context.Context, filter calcRepo.E
 			return nil, err
 		}
 		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return items, nil
 }

@@ -18,14 +18,14 @@ func newMockExpenseRepo() *mockExpenseRepo {
 	return &mockExpenseRepo{nextID: 1}
 }
 
-func (r *mockExpenseRepo) Create(ctx context.Context, expense *domain.Expense) error {
+func (r *mockExpenseRepo) Create(_ context.Context, expense *domain.Expense) error {
 	expense.ID = r.nextID
 	r.nextID++
 	r.expenses = append(r.expenses, *expense)
 	return nil
 }
 
-func (r *mockExpenseRepo) GetByID(ctx context.Context, id int64) (*domain.Expense, error) {
+func (r *mockExpenseRepo) GetByID(_ context.Context, id int64) (*domain.Expense, error) {
 	for _, e := range r.expenses {
 		if e.ID == id {
 			return &e, nil
@@ -34,11 +34,11 @@ func (r *mockExpenseRepo) GetByID(ctx context.Context, id int64) (*domain.Expens
 	return nil, nil
 }
 
-func (r *mockExpenseRepo) List(ctx context.Context, filter repository.ExpenseFilter) ([]domain.Expense, error) {
+func (r *mockExpenseRepo) List(_ context.Context, _ repository.ExpenseFilter) ([]domain.Expense, error) {
 	return r.expenses, nil
 }
 
-func (r *mockExpenseRepo) Update(ctx context.Context, expense *domain.Expense) error {
+func (r *mockExpenseRepo) Update(_ context.Context, expense *domain.Expense) error {
 	for i, e := range r.expenses {
 		if e.ID == expense.ID {
 			r.expenses[i] = *expense
@@ -48,7 +48,7 @@ func (r *mockExpenseRepo) Update(ctx context.Context, expense *domain.Expense) e
 	return nil
 }
 
-func (r *mockExpenseRepo) Delete(ctx context.Context, id int64) error {
+func (r *mockExpenseRepo) Delete(_ context.Context, id int64) error {
 	for i, e := range r.expenses {
 		if e.ID == id {
 			r.expenses = append(r.expenses[:i], r.expenses[i+1:]...)
@@ -191,10 +191,10 @@ func TestExpenseService_Create_DefaultPurchaseDate(t *testing.T) {
 	svc := NewExpenseService(repo)
 
 	expense := &domain.Expense{
-		HouseholdID:  1,
-		AmountCLP:    50000,
-		Description:  "Test",
-		PaymentType:  domain.PaymentTypeCash,
+		HouseholdID: 1,
+		AmountCLP:   50000,
+		Description: "Test",
+		PaymentType: domain.PaymentTypeCash,
 	}
 
 	err := svc.Create(context.Background(), expense)
@@ -214,10 +214,10 @@ func TestExpenseService_Update_InvalidAmount(t *testing.T) {
 	svc := NewExpenseService(repo)
 
 	expense := &domain.Expense{
-		HouseholdID:  1,
-		AmountCLP:    50000,
-		Description:  "Test",
-		PaymentType:  domain.PaymentTypeCash,
+		HouseholdID: 1,
+		AmountCLP:   50000,
+		Description: "Test",
+		PaymentType: domain.PaymentTypeCash,
 	}
 	svc.Create(context.Background(), expense)
 
@@ -233,10 +233,10 @@ func TestExpenseService_Update_CreditWithoutCard(t *testing.T) {
 	svc := NewExpenseService(repo)
 
 	expense := &domain.Expense{
-		HouseholdID:  1,
-		AmountCLP:    50000,
-		Description:  "Test",
-		PaymentType:  domain.PaymentTypeCash,
+		HouseholdID: 1,
+		AmountCLP:   50000,
+		Description: "Test",
+		PaymentType: domain.PaymentTypeCash,
 	}
 	svc.Create(context.Background(), expense)
 
@@ -253,11 +253,11 @@ func TestExpenseService_Update_NotFound(t *testing.T) {
 	svc := NewExpenseService(repo)
 
 	expense := &domain.Expense{
-		ID:           999,
-		HouseholdID:  1,
-		AmountCLP:    50000,
-		Description:  "Test",
-		PaymentType:  domain.PaymentTypeCash,
+		ID:          999,
+		HouseholdID: 1,
+		AmountCLP:   50000,
+		Description: "Test",
+		PaymentType: domain.PaymentTypeCash,
 	}
 
 	err := svc.Update(context.Background(), expense)

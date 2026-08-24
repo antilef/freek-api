@@ -15,14 +15,14 @@ func newMockMemberRepo() *mockMemberRepo {
 	return &mockMemberRepo{nextID: 1}
 }
 
-func (r *mockMemberRepo) Create(ctx context.Context, member *domain.Member) error {
+func (r *mockMemberRepo) Create(_ context.Context, member *domain.Member) error {
 	member.ID = r.nextID
 	r.nextID++
 	r.members = append(r.members, *member)
 	return nil
 }
 
-func (r *mockMemberRepo) GetByID(ctx context.Context, id int64) (*domain.Member, error) {
+func (r *mockMemberRepo) GetByID(_ context.Context, id int64) (*domain.Member, error) {
 	for _, m := range r.members {
 		if m.ID == id {
 			return &m, nil
@@ -31,11 +31,11 @@ func (r *mockMemberRepo) GetByID(ctx context.Context, id int64) (*domain.Member,
 	return nil, nil
 }
 
-func (r *mockMemberRepo) ListByHousehold(ctx context.Context, householdID int64) ([]domain.Member, error) {
+func (r *mockMemberRepo) ListByHousehold(_ context.Context, _ int64) ([]domain.Member, error) {
 	return r.members, nil
 }
 
-func (r *mockMemberRepo) Delete(ctx context.Context, id int64) error {
+func (r *mockMemberRepo) Delete(_ context.Context, id int64) error {
 	for i, m := range r.members {
 		if m.ID == id {
 			r.members = append(r.members[:i], r.members[i+1:]...)
@@ -45,7 +45,7 @@ func (r *mockMemberRepo) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (r *mockMemberRepo) ExistsByName(ctx context.Context, householdID int64, name string) (bool, error) {
+func (r *mockMemberRepo) ExistsByName(_ context.Context, _ int64, name string) (bool, error) {
 	for _, m := range r.members {
 		if m.Name == name {
 			return true, nil
@@ -54,7 +54,7 @@ func (r *mockMemberRepo) ExistsByName(ctx context.Context, householdID int64, na
 	return false, nil
 }
 
-func (r *mockMemberRepo) HasExpenses(ctx context.Context, memberID int64) (bool, error) {
+func (r *mockMemberRepo) HasExpenses(_ context.Context, _ int64) (bool, error) {
 	return false, nil
 }
 

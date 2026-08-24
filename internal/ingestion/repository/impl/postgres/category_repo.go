@@ -6,14 +6,17 @@ import (
 	"freek/internal/ingestion/domain"
 )
 
+// CategoryRepo ...
 type CategoryRepo struct {
 	db *sql.DB
 }
 
+// NewCategoryRepo creates a new CategoryRepo.
 func NewCategoryRepo(db *sql.DB) *CategoryRepo {
 	return &CategoryRepo{db: db}
 }
 
+// ListByHousehold ...
 func (r *CategoryRepo) ListByHousehold(ctx context.Context, householdID int64) ([]domain.Category, error) {
 	query := `SELECT id, household_id, name, icon, is_predefined, created_at, updated_at
 		FROM categories WHERE household_id = $1 OR household_id IS NULL
@@ -22,7 +25,7 @@ func (r *CategoryRepo) ListByHousehold(ctx context.Context, householdID int64) (
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var categories []domain.Category
 	for rows.Next() {
@@ -32,9 +35,13 @@ func (r *CategoryRepo) ListByHousehold(ctx context.Context, householdID int64) (
 		}
 		categories = append(categories, c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return categories, nil
 }
 
+// Create ...
 func (r *CategoryRepo) Create(ctx context.Context, category *domain.Category) error {
 	query := `INSERT INTO categories (household_id, name, icon, is_predefined)
 		VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at`
@@ -42,6 +49,7 @@ func (r *CategoryRepo) Create(ctx context.Context, category *domain.Category) er
 		Scan(&category.ID, &category.CreatedAt, &category.UpdatedAt)
 }
 
+// Update ...
 func (r *CategoryRepo) Update(ctx context.Context, category *domain.Category) error {
 	var query string
 	var args []interface{}
@@ -58,12 +66,14 @@ func (r *CategoryRepo) Update(ctx context.Context, category *domain.Category) er
 	return err
 }
 
+// Delete ...
 func (r *CategoryRepo) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM categories WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id)
 	return err
 }
 
+// GetByID ...
 func (r *CategoryRepo) GetByID(ctx context.Context, id int64) (*domain.Category, error) {
 	query := `SELECT id, household_id, name, icon, is_predefined, created_at, updated_at
 		FROM categories WHERE id = $1`
@@ -79,6 +89,7 @@ func (r *CategoryRepo) GetByID(ctx context.Context, id int64) (*domain.Category,
 	return c, nil
 }
 
+// ExistsByName ...
 func (r *CategoryRepo) ExistsByName(ctx context.Context, householdID int64, name string) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM categories WHERE (household_id = $1 OR household_id IS NULL) AND name = $2)`
 	var exists bool
@@ -86,6 +97,7 @@ func (r *CategoryRepo) ExistsByName(ctx context.Context, householdID int64, name
 	return exists, err
 }
 
+// HasExpenses ...
 func (r *CategoryRepo) HasExpenses(ctx context.Context, categoryID int64) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM expenses WHERE category_id = $1)`
 	var exists bool

@@ -2,11 +2,13 @@ package dates
 
 import "time"
 
+// PeriodConfig defines a custom monthly period that may span month boundaries when StartDay > EndDay.
 type PeriodConfig struct {
 	StartDay int
 	EndDay   int
 }
 
+// GetPeriodForDate returns the period containing the given date.
 func (pc PeriodConfig) GetPeriodForDate(date time.Time) (start, end time.Time) {
 	year, month, _ := date.Date()
 
@@ -29,20 +31,24 @@ func (pc PeriodConfig) GetPeriodForDate(date time.Time) (start, end time.Time) {
 	return start, end
 }
 
+// GetCurrentPeriod returns the period containing now.
 func (pc PeriodConfig) GetCurrentPeriod(now time.Time) (start, end time.Time) {
 	return pc.GetPeriodForDate(now)
 }
 
+// GetNextPeriodStart returns the start of the period following now.
 func (pc PeriodConfig) GetNextPeriodStart(now time.Time) time.Time {
 	_, currentEnd := pc.GetPeriodForDate(now)
 	return currentEnd.Add(1 * time.Second)
 }
 
+// GetPreviousPeriodStart returns the start of the period preceding now.
 func (pc PeriodConfig) GetPreviousPeriodStart(now time.Time) time.Time {
 	start, _ := pc.GetPeriodForDate(now)
 	return start.AddDate(0, -1, 0)
 }
 
+// DateRange orders two dates and returns them as start and end.
 func DateRange(from, to time.Time) (start, end time.Time) {
 	if from.Before(to) {
 		return from, to

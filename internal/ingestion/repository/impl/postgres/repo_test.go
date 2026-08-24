@@ -3,12 +3,12 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"freek/internal/ingestion/domain"
+	"freek/internal/ingestion/repository"
 	"os"
 	"testing"
 	"time"
 
-	"freek/internal/ingestion/domain"
-	"freek/internal/ingestion/repository"
 	_ "github.com/lib/pq"
 )
 
@@ -21,7 +21,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 		}
 		t.Skip("Skipping: PostgreSQL not available:", err)
 	}
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		if os.Getenv("CI") == "1" {
 			t.Fatal("CI requires PostgreSQL, cannot connect:", err)
 		}
@@ -29,11 +29,11 @@ func setupTestDB(t *testing.T) *sql.DB {
 	}
 
 	// Clean test data
-	db.Exec("DELETE FROM expenses")
-	db.Exec("DELETE FROM credit_cards")
-	db.Exec("DELETE FROM members")
-	db.Exec("DELETE FROM categories WHERE household_id IS NOT NULL")
-	db.Exec("DELETE FROM households")
+	db.ExecContext(context.Background(), "DELETE FROM expenses")
+	db.ExecContext(context.Background(), "DELETE FROM credit_cards")
+	db.ExecContext(context.Background(), "DELETE FROM members")
+	db.ExecContext(context.Background(), "DELETE FROM categories WHERE household_id IS NOT NULL")
+	db.ExecContext(context.Background(), "DELETE FROM households")
 
 	return db
 }

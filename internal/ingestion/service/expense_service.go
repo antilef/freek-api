@@ -11,12 +11,15 @@ import (
 	"time"
 )
 
+// ErrExpenseNotFound is returned when an expense does not exist in the household.
 var ErrExpenseNotFound = errors.New("expense not found")
 
+// ExpenseService enforces expense business rules over the repository.
 type ExpenseService struct {
 	repo repository.ExpenseRepository
 }
 
+// NewExpenseService creates a new ExpenseService.
 func NewExpenseService(repo repository.ExpenseRepository) *ExpenseService {
 	return &ExpenseService{repo: repo}
 }
@@ -40,6 +43,7 @@ func (s *ExpenseService) validate(expense *domain.Expense) error {
 	return nil
 }
 
+// Create validates the expense and persists it, defaulting purchase_date to today.
 func (s *ExpenseService) Create(ctx context.Context, expense *domain.Expense) error {
 	if err := s.validate(expense); err != nil {
 		return err
@@ -53,14 +57,17 @@ func (s *ExpenseService) Create(ctx context.Context, expense *domain.Expense) er
 	return s.repo.Create(ctx, expense)
 }
 
+// GetByID returns an expense by ID within the household scope.
 func (s *ExpenseService) GetByID(ctx context.Context, id int64) (*domain.Expense, error) {
 	return s.repo.GetByID(ctx, id)
 }
 
+// List returns expenses matching the filter within the household scope.
 func (s *ExpenseService) List(ctx context.Context, filter repository.ExpenseFilter) ([]domain.Expense, error) {
 	return s.repo.List(ctx, filter)
 }
 
+// Update validates changes and persists them; not-found yields ErrExpenseNotFound.
 func (s *ExpenseService) Update(ctx context.Context, expense *domain.Expense) error {
 	existing, err := s.repo.GetByID(ctx, expense.ID)
 	if err != nil {
@@ -77,6 +84,7 @@ func (s *ExpenseService) Update(ctx context.Context, expense *domain.Expense) er
 	return s.repo.Update(ctx, expense)
 }
 
+// Delete permanently removes an expense; not-found yields ErrExpenseNotFound.
 func (s *ExpenseService) Delete(ctx context.Context, id int64) error {
 	existing, err := s.repo.GetByID(ctx, id)
 	if err != nil {
@@ -89,11 +97,13 @@ func (s *ExpenseService) Delete(ctx context.Context, id int64) error {
 	return s.repo.Delete(ctx, id)
 }
 
+// CalculateMonthlyAmount derives the round-up monthly installment at read time.
 func (s *ExpenseService) CalculateMonthlyAmount(expense *domain.Expense) money.CLP {
 	total := money.TotalWithInterest(expense.AmountCLP, expense.InterestRate)
 	return money.MonthlyInstallment(total, expense.Installments)
 }
 
+// CalculateFirstSettlementDate returns the settlement date charged with the first installment.
 func (s *ExpenseService) CalculateFirstSettlementDate(expense *domain.Expense, closingDay int) time.Time {
 	return dates.NextClosingDate(expense.PurchaseDate, closingDay)
 }

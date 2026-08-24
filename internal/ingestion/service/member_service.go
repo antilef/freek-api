@@ -7,14 +7,17 @@ import (
 	"freek/internal/ingestion/repository"
 )
 
+// MemberService ...
 type MemberService struct {
 	repo repository.MemberRepository
 }
 
+// NewMemberService creates a new MemberService.
 func NewMemberService(repo repository.MemberRepository) *MemberService {
 	return &MemberService{repo: repo}
 }
 
+// Create ...
 func (s *MemberService) Create(ctx context.Context, member *domain.Member) error {
 	exists, err := s.repo.ExistsByName(ctx, member.HouseholdID, member.Name)
 	if err != nil {
@@ -26,10 +29,12 @@ func (s *MemberService) Create(ctx context.Context, member *domain.Member) error
 	return s.repo.Create(ctx, member)
 }
 
+// ListByHousehold ...
 func (s *MemberService) ListByHousehold(ctx context.Context, householdID int64) ([]domain.Member, error) {
 	return s.repo.ListByHousehold(ctx, householdID)
 }
 
+// Delete ...
 func (s *MemberService) Delete(ctx context.Context, memberID int64) error {
 	hasExpenses, err := s.repo.HasExpenses(ctx, memberID)
 	if err != nil {

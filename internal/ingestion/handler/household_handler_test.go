@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"freek/internal/ingestion/domain"
+	"freek/internal/ingestion/service"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"freek/internal/ingestion/domain"
-	"freek/internal/ingestion/service"
 	"github.com/gorilla/mux"
 )
 
@@ -17,13 +17,13 @@ type testHouseholdRepo struct {
 	households []domain.Household
 }
 
-func (r *testHouseholdRepo) Create(ctx context.Context, h *domain.Household) error {
+func (r *testHouseholdRepo) Create(_ context.Context, h *domain.Household) error {
 	h.ID = int64(len(r.households) + 1)
 	r.households = append(r.households, *h)
 	return nil
 }
 
-func (r *testHouseholdRepo) GetByID(ctx context.Context, id int64) (*domain.Household, error) {
+func (r *testHouseholdRepo) GetByID(_ context.Context, id int64) (*domain.Household, error) {
 	for _, h := range r.households {
 		if h.ID == id {
 			return &h, nil
@@ -32,11 +32,11 @@ func (r *testHouseholdRepo) GetByID(ctx context.Context, id int64) (*domain.Hous
 	return nil, nil
 }
 
-func (r *testHouseholdRepo) Update(ctx context.Context, h *domain.Household) error {
+func (r *testHouseholdRepo) Update(_ context.Context, _ *domain.Household) error {
 	return nil
 }
 
-func (r *testHouseholdRepo) Delete(ctx context.Context, id int64) error {
+func (r *testHouseholdRepo) Delete(_ context.Context, _ int64) error {
 	return nil
 }
 
@@ -46,7 +46,7 @@ func TestHouseholdHandler_Create(t *testing.T) {
 	handler := NewHouseholdHandler(svc, nil)
 
 	body := `{"name":"Familia Pérez"}`
-	req := httptest.NewRequest("POST", "/api/v1/households", bytes.NewBufferString(body))
+	req := httptest.NewRequestWithContext(context.Background(), "POST", "/api/v1/households", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
@@ -70,7 +70,7 @@ func TestHouseholdHandler_Create_MissingName(t *testing.T) {
 	handler := NewHouseholdHandler(svc, nil)
 
 	body := `{}`
-	req := httptest.NewRequest("POST", "/api/v1/households", bytes.NewBufferString(body))
+	req := httptest.NewRequestWithContext(context.Background(), "POST", "/api/v1/households", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
@@ -86,7 +86,7 @@ func TestHouseholdHandler_GetByID(t *testing.T) {
 	svc := service.NewHouseholdService(repo)
 	handler := NewHouseholdHandler(svc, nil)
 
-	req := httptest.NewRequest("GET", "/api/v1/households/1", nil)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/api/v1/households/1", nil)
 	w := httptest.NewRecorder()
 
 	vars := map[string]string{"id": "1"}

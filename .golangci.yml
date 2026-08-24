@@ -1,10 +1,44 @@
 version: "2"
 
 linters:
+  # Default set plus project choices. See docs/CONSTITUTION.md §11 for the
+  # exclusion policy: exclusions are last resort, always justified.
   enable:
     - govet
     - staticcheck
     - unused
     - ineffassign
-  disable:
-    - errcheck
+    - revive       # exported symbols need doc comments (Constitution #9)
+    - errcheck     # unchecked errors are bugs (Constitution #8)...
+    - noctx        # ...and I/O must carry context (Constitution #9)
+    - rowserrcheck # truncated query results must fail loudly, not partially
+    - nolintlint   # every //nolint needs a reason; bare directives fail CI
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    rules:
+      # Pattern 1 (the only path-scoped exclusion): seed calls in tests.
+      - path: _test\.go
+        linters:
+          - errcheck
+
+formatters:
+  enable:
+    - gofumpt
+
+# Surgical exclusions — the ONLY accepted patterns:
+#
+# 1. errcheck in test files (below): fixture/seed calls (repo.Create when
+#    arranging a test) intentionally ignore errors; real failures surface at
+#    assertion time with better context than a seed error would give.
+# 2. json.NewEncoder(w).Encode(...) in handlers: response headers are already
+#    committed; there is nothing useful to do on write failure
+#    (Constitution #11). Those sites use inline //nolint:errcheck instead,
+#    visible where they happen — nothing excluded here for them.
+
+# Show every finding while driving to zero.
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

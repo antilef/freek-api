@@ -1,7 +1,9 @@
+// Package dates provides calendar helpers for closings, settlements, and periods.
 package dates
 
 import "time"
 
+// NextClosingDate returns the first statement closing date after a purchase.
 func NextClosingDate(purchaseDate time.Time, closingDay int) time.Time {
 	purchaseYear, purchaseMonth, purchaseDay := purchaseDate.Date()
 
@@ -15,6 +17,7 @@ func NextClosingDate(purchaseDate time.Time, closingDay int) time.Time {
 	return candidate
 }
 
+// ClosingDates returns the n consecutive closing dates covered by an installment plan.
 func ClosingDates(purchaseDate time.Time, closingDay int, months int) []time.Time {
 	dates := make([]time.Time, months)
 	first := NextClosingDate(purchaseDate, closingDay)
@@ -24,6 +27,7 @@ func ClosingDates(purchaseDate time.Time, closingDay int, months int) []time.Tim
 	return dates
 }
 
+// SettlementForMonth returns the start and end of the settlement cycle identified by its closing month.
 func SettlementForMonth(closingDay int, year int, month time.Month) (start, end time.Time) {
 	end = time.Date(year, month, closingDay, 23, 59, 59, 0, time.UTC)
 

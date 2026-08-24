@@ -5,6 +5,7 @@ import (
 	"freek/internal/ingestion/domain"
 )
 
+// CategoryRepository persists and queries global and household categories.
 type CategoryRepository interface {
 	ListByHousehold(ctx context.Context, householdID int64) ([]domain.Category, error)
 	Create(ctx context.Context, category *domain.Category) error

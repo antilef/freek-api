@@ -1,23 +1,27 @@
+// Package handler exposes ingestion endpoints over HTTP.
 package handler
 
 import (
 	"encoding/json"
+	"freek/internal/ingestion/domain"
+	"freek/internal/ingestion/service"
 	"net/http"
 	"strconv"
 
-	"freek/internal/ingestion/domain"
-	"freek/internal/ingestion/service"
 	"github.com/gorilla/mux"
 )
 
+// CardHandler handles HTTP requests for credit card endpoints.
 type CardHandler struct {
 	cardService *service.CardService
 }
 
+// NewCardHandler creates a new CardHandler.
 func NewCardHandler(cs *service.CardService) *CardHandler {
 	return &CardHandler{cardService: cs}
 }
 
+// Create handles POST requests to create a credit card.
 func (h *CardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -39,9 +43,12 @@ func (h *CardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(card)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(card) //nolint:errcheck // response already committed
 }
 
+// List handles GET requests returning a household's cards, optionally filtered by member.
 func (h *CardHandler) List(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -72,9 +79,12 @@ func (h *CardHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(cards)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(cards) //nolint:errcheck // response already committed
 }
 
+// GetByID handles GET requests for a single credit card.
 func (h *CardHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	cardID, err := strconv.ParseInt(mux.Vars(r)["card_id"], 10, 64)
 	if err != nil {
@@ -93,9 +103,12 @@ func (h *CardHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(card)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(card) //nolint:errcheck // response already committed
 }
 
+// Update handles PUT requests to modify a credit card.
 func (h *CardHandler) Update(w http.ResponseWriter, r *http.Request) {
 	cardID, err := strconv.ParseInt(mux.Vars(r)["card_id"], 10, 64)
 	if err != nil {
@@ -116,9 +129,12 @@ func (h *CardHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(card)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(card) //nolint:errcheck // response already committed
 }
 
+// Delete handles DELETE requests to remove a credit card.
 func (h *CardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	cardID, err := strconv.ParseInt(mux.Vars(r)["card_id"], 10, 64)
 	if err != nil {

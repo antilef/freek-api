@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// CardRepository provides the card lookups the projector needs.
 type CardRepository interface {
 	GetByID(ctx context.Context, id int64) (*struct {
 		ClosingDay int
@@ -19,15 +20,18 @@ type CardRepository interface {
 	}, error)
 }
 
+// ProjectionService simulates future months of outstanding installment charges.
 type ProjectionService struct {
 	expenseReadRepo calcRepo.ExpenseReadRepository
 	cardRepo        CardRepository
 }
 
+// NewProjectionService creates a new ProjectionService.
 func NewProjectionService(er calcRepo.ExpenseReadRepository, cr CardRepository) *ProjectionService {
 	return &ProjectionService{expenseReadRepo: er, cardRepo: cr}
 }
 
+// ProjectByCard projects remaining installments for one card; nil card projects all cards.
 func (s *ProjectionService) ProjectByCard(ctx context.Context, householdID int64, cardID int64, months int) (*domain.ProjectionResult, error) {
 	expenses, err := s.expenseReadRepo.ListForProjection(ctx, householdID, &cardID)
 	if err != nil {
@@ -69,13 +73,15 @@ func (s *ProjectionService) ProjectByCard(ctx context.Context, householdID int64
 	}
 
 	return &domain.ProjectionResult{
-		Months:       allMonths,
-		Total:        total,
+		Months:        allMonths,
+		Total:         total,
 		MonthlyTotals: monthlyTotals,
 	}, nil
 }
 
-func (s *ProjectionService) ProjectAll(ctx context.Context, householdID int64, months int) (*domain.ProjectionResult, error) {
+// ProjectAll ...
+// ProjectAll projects upcoming months across all household cards.
+func (s *ProjectionService) ProjectAll(_ context.Context, _ int64, months int) (*domain.ProjectionResult, error) {
 	if months <= 0 {
 		months = 12
 	}
@@ -96,8 +102,8 @@ func (s *ProjectionService) ProjectAll(ctx context.Context, householdID int64, m
 	}
 
 	return &domain.ProjectionResult{
-		Months:       allMonths,
-		Total:        total,
+		Months:        allMonths,
+		Total:         total,
 		MonthlyTotals: monthlyTotals,
 	}, nil
 }

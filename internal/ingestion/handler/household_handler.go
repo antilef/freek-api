@@ -2,23 +2,26 @@ package handler
 
 import (
 	"encoding/json"
+	"freek/internal/ingestion/domain"
+	"freek/internal/ingestion/service"
 	"net/http"
 	"strconv"
 
-	"freek/internal/ingestion/domain"
-	"freek/internal/ingestion/service"
 	"github.com/gorilla/mux"
 )
 
+// HouseholdHandler handles HTTP requests for household and member endpoints.
 type HouseholdHandler struct {
 	householdService *service.HouseholdService
 	memberService    *service.MemberService
 }
 
+// NewHouseholdHandler creates a new HouseholdHandler.
 func NewHouseholdHandler(hs *service.HouseholdService, ms *service.MemberService) *HouseholdHandler {
 	return &HouseholdHandler{householdService: hs, memberService: ms}
 }
 
+// Create handles POST requests to create a household.
 func (h *HouseholdHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var household domain.Household
 	if err := json.NewDecoder(r.Body).Decode(&household); err != nil {
@@ -38,9 +41,11 @@ func (h *HouseholdHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(household)
+	// Response already committed; nothing useful to do on write failure.
+	json.NewEncoder(w).Encode(household) //nolint:errcheck // response already committed
 }
 
+// GetByID handles GET requests for a single household.
 func (h *HouseholdHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -59,9 +64,11 @@ func (h *HouseholdHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(household)
+	// Response already committed; nothing useful to do on write failure.
+	json.NewEncoder(w).Encode(household) //nolint:errcheck // response already committed
 }
 
+// AddMember handles POST requests to add a member to a household.
 func (h *HouseholdHandler) AddMember(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -87,9 +94,11 @@ func (h *HouseholdHandler) AddMember(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(member)
+	// Response already committed; nothing useful to do on write failure.
+	json.NewEncoder(w).Encode(member) //nolint:errcheck // response already committed
 }
 
+// ListMembers handles GET requests returning a household's members.
 func (h *HouseholdHandler) ListMembers(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -108,9 +117,11 @@ func (h *HouseholdHandler) ListMembers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(members)
+	// Response already committed; nothing useful to do on write failure.
+	json.NewEncoder(w).Encode(members) //nolint:errcheck // response already committed
 }
 
+// RemoveMember handles DELETE requests to remove a member from a household.
 func (h *HouseholdHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 	memberID, err := strconv.ParseInt(mux.Vars(r)["member_id"], 10, 64)
 	if err != nil {

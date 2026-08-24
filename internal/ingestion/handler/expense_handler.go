@@ -3,24 +3,27 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"freek/internal/ingestion/domain"
+	"freek/internal/ingestion/repository"
+	"freek/internal/ingestion/service"
 	"net/http"
 	"strconv"
 	"time"
 
-	"freek/internal/ingestion/domain"
-	"freek/internal/ingestion/repository"
-	"freek/internal/ingestion/service"
 	"github.com/gorilla/mux"
 )
 
+// ExpenseHandler handles HTTP requests for expense endpoints.
 type ExpenseHandler struct {
 	expenseService *service.ExpenseService
 }
 
+// NewExpenseHandler creates a new ExpenseHandler.
 func NewExpenseHandler(es *service.ExpenseService) *ExpenseHandler {
 	return &ExpenseHandler{expenseService: es}
 }
 
+// Create handles POST requests to register a new expense.
 func (h *ExpenseHandler) Create(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -42,9 +45,12 @@ func (h *ExpenseHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(expense)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(expense) //nolint:errcheck // response already committed
 }
 
+// List handles GET requests returning filtered household expenses.
 func (h *ExpenseHandler) List(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -105,9 +111,12 @@ func (h *ExpenseHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(expenses)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(expenses) //nolint:errcheck // response already committed
 }
 
+// Update handles PUT requests to modify an expense.
 func (h *ExpenseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	expenseID, err := strconv.ParseInt(mux.Vars(r)["expense_id"], 10, 64)
 	if err != nil {
@@ -132,9 +141,12 @@ func (h *ExpenseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(expense)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(expense) //nolint:errcheck // response already committed
 }
 
+// Delete handles DELETE requests to permanently remove an expense.
 func (h *ExpenseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	expenseID, err := strconv.ParseInt(mux.Vars(r)["expense_id"], 10, 64)
 	if err != nil {

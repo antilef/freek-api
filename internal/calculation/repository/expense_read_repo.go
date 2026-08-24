@@ -1,3 +1,4 @@
+// Package repository defines calculation read-side persistence interfaces.
 package repository
 
 import (
@@ -6,6 +7,7 @@ import (
 	"time"
 )
 
+// ExpenseReadFilter ...
 type ExpenseReadFilter struct {
 	HouseholdID  int64
 	CreditCardID *int64
@@ -16,6 +18,7 @@ type ExpenseReadFilter struct {
 	Search       *string
 }
 
+// SummaryItem ...
 type SummaryItem struct {
 	CategoryID   *int64
 	CategoryName string
@@ -24,6 +27,7 @@ type SummaryItem struct {
 	Total        int64
 }
 
+// ExpenseReadRepository ...
 type ExpenseReadRepository interface {
 	ListForProjection(ctx context.Context, householdID int64, cardID *int64) ([]domain.SettlementExpense, error)
 	ListByPeriod(ctx context.Context, filter ExpenseReadFilter) ([]domain.SettlementExpense, error)

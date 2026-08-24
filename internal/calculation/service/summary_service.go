@@ -6,22 +6,27 @@ import (
 	"time"
 )
 
+// SummaryService aggregates expense totals by category, member, and period.
 type SummaryService struct {
 	expenseReadRepo repository.ExpenseReadRepository
 }
 
+// NewSummaryService creates a new SummaryService.
 func NewSummaryService(er repository.ExpenseReadRepository) *SummaryService {
 	return &SummaryService{expenseReadRepo: er}
 }
 
+// SummaryByCategory totals household expenses per category over the filter range.
 func (s *SummaryService) SummaryByCategory(ctx context.Context, filter repository.ExpenseReadFilter) ([]repository.SummaryItem, error) {
 	return s.expenseReadRepo.SummaryByCategory(ctx, filter)
 }
 
+// SummaryByMember totals household expenses per member over the filter range.
 func (s *SummaryService) SummaryByMember(ctx context.Context, filter repository.ExpenseReadFilter) ([]repository.SummaryItem, error) {
 	return s.expenseReadRepo.SummaryByMember(ctx, filter)
 }
 
+// ComparePeriods returns category/member summaries for two ranges and their difference.
 func (s *SummaryService) ComparePeriods(ctx context.Context, householdID int64, period1From, period1To, period2From, period2To time.Time) (map[string]interface{}, error) {
 	filter1 := repository.ExpenseReadFilter{
 		HouseholdID: householdID,

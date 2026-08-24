@@ -2,6 +2,7 @@ package domain
 
 import "time"
 
+// Household ...
 type Household struct {
 	ID        int64     `json:"id"`
 	Name      string    `json:"name"`

@@ -9,14 +9,17 @@ import (
 	"time"
 )
 
+// ExpenseRepo implements ExpenseRepository over PostgreSQL.
 type ExpenseRepo struct {
 	db *sql.DB
 }
 
+// NewExpenseRepo creates a new ExpenseRepo.
 func NewExpenseRepo(db *sql.DB) *ExpenseRepo {
 	return &ExpenseRepo{db: db}
 }
 
+// Create inserts an expense and populates generated fields.
 func (r *ExpenseRepo) Create(ctx context.Context, expense *domain.Expense) error {
 	query := `INSERT INTO expenses (household_id, amount_clp, description, notes, category_id, payment_type,
 		credit_card_id, member_id, purchase_date, installments, interest_rate, status)
@@ -29,6 +32,7 @@ func (r *ExpenseRepo) Create(ctx context.Context, expense *domain.Expense) error
 		Scan(&expense.ID, &expense.CreatedAt, &expense.UpdatedAt)
 }
 
+// GetByID returns an expense by ID within the household scope.
 func (r *ExpenseRepo) GetByID(ctx context.Context, id int64) (*domain.Expense, error) {
 	query := `SELECT id, household_id, amount_clp, description, notes, category_id, payment_type,
 		credit_card_id, member_id, purchase_date, installments, interest_rate, status, created_at, updated_at
@@ -47,6 +51,7 @@ func (r *ExpenseRepo) GetByID(ctx context.Context, id int64) (*domain.Expense, e
 	return e, nil
 }
 
+// List returns household expenses matching the filter, newest first.
 func (r *ExpenseRepo) List(ctx context.Context, filter repository.ExpenseFilter) ([]domain.Expense, error) {
 	query := `SELECT id, household_id, amount_clp, description, notes, category_id, payment_type,
 		credit_card_id, member_id, purchase_date, installments, interest_rate, status, created_at, updated_at
@@ -95,7 +100,7 @@ func (r *ExpenseRepo) List(ctx context.Context, filter repository.ExpenseFilter)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var expenses []domain.Expense
 	for rows.Next() {
@@ -107,9 +112,13 @@ func (r *ExpenseRepo) List(ctx context.Context, filter repository.ExpenseFilter)
 		}
 		expenses = append(expenses, e)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return expenses, nil
 }
 
+// Update rewrites mutable expense fields.
 func (r *ExpenseRepo) Update(ctx context.Context, expense *domain.Expense) error {
 	query := `UPDATE expenses SET amount_clp = $1, description = $2, notes = $3, category_id = $4,
 		payment_type = $5, credit_card_id = $6, member_id = $7, purchase_date = $8,
@@ -122,6 +131,7 @@ func (r *ExpenseRepo) Update(ctx context.Context, expense *domain.Expense) error
 	return err
 }
 
+// Delete permanently removes an expense row.
 func (r *ExpenseRepo) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM expenses WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id)

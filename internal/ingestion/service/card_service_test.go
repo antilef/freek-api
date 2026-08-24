@@ -14,13 +14,13 @@ func newMockCardRepo() *mockCardRepo {
 	return &mockCardRepo{}
 }
 
-func (r *mockCardRepo) Create(ctx context.Context, card *domain.CreditCard) error {
+func (r *mockCardRepo) Create(_ context.Context, card *domain.CreditCard) error {
 	card.ID = int64(len(r.cards) + 1)
 	r.cards = append(r.cards, *card)
 	return nil
 }
 
-func (r *mockCardRepo) GetByID(ctx context.Context, id int64) (*domain.CreditCard, error) {
+func (r *mockCardRepo) GetByID(_ context.Context, id int64) (*domain.CreditCard, error) {
 	for _, c := range r.cards {
 		if c.ID == id {
 			return &c, nil
@@ -29,23 +29,23 @@ func (r *mockCardRepo) GetByID(ctx context.Context, id int64) (*domain.CreditCar
 	return nil, nil
 }
 
-func (r *mockCardRepo) ListByHousehold(ctx context.Context, householdID int64) ([]domain.CreditCard, error) {
+func (r *mockCardRepo) ListByHousehold(_ context.Context, _ int64) ([]domain.CreditCard, error) {
 	return r.cards, nil
 }
 
-func (r *mockCardRepo) ListByMember(ctx context.Context, householdID int64, memberID int64) ([]domain.CreditCard, error) {
+func (r *mockCardRepo) ListByMember(_ context.Context, _ int64, _ int64) ([]domain.CreditCard, error) {
 	return r.cards, nil
 }
 
-func (r *mockCardRepo) Update(ctx context.Context, card *domain.CreditCard) error {
+func (r *mockCardRepo) Update(_ context.Context, _ *domain.CreditCard) error {
 	return nil
 }
 
-func (r *mockCardRepo) Delete(ctx context.Context, id int64) error {
+func (r *mockCardRepo) Delete(_ context.Context, _ int64) error {
 	return nil
 }
 
-func (r *mockCardRepo) HasExpenses(ctx context.Context, cardID int64) (bool, error) {
+func (r *mockCardRepo) HasExpenses(_ context.Context, _ int64) (bool, error) {
 	return false, nil
 }
 

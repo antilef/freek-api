@@ -5,6 +5,7 @@ import (
 	"freek/internal/ingestion/domain"
 )
 
+// MemberRepository persists and queries household members.
 type MemberRepository interface {
 	Create(ctx context.Context, member *domain.Member) error
 	GetByID(ctx context.Context, id int64) (*domain.Member, error)

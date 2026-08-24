@@ -2,23 +2,26 @@ package handler
 
 import (
 	"encoding/json"
+	"freek/internal/calculation/repository"
+	"freek/internal/calculation/service"
 	"net/http"
 	"strconv"
 	"time"
 
-	"freek/internal/calculation/repository"
-	"freek/internal/calculation/service"
 	"github.com/gorilla/mux"
 )
 
+// SummaryHandler handles HTTP requests for expense summaries.
 type SummaryHandler struct {
 	summaryService *service.SummaryService
 }
 
+// NewSummaryHandler creates a new SummaryHandler.
 func NewSummaryHandler(ss *service.SummaryService) *SummaryHandler {
 	return &SummaryHandler{summaryService: ss}
 }
 
+// Summary handles GET requests returning totals grouped by category or member.
 func (h *SummaryHandler) Summary(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -56,9 +59,12 @@ func (h *SummaryHandler) Summary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(items)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(items) //nolint:errcheck // response already committed
 }
 
+// Compare handles GET requests comparing totals between two date ranges.
 func (h *SummaryHandler) Compare(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -99,5 +105,7 @@ func (h *SummaryHandler) Compare(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(result) //nolint:errcheck // response already committed
 }

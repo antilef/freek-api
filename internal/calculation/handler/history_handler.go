@@ -1,24 +1,28 @@
+// Package handler exposes calculation read endpoints over HTTP.
 package handler
 
 import (
 	"encoding/json"
+	"freek/internal/calculation/repository"
+	"freek/internal/calculation/service"
 	"net/http"
 	"strconv"
 	"time"
 
-	"freek/internal/calculation/repository"
-	"freek/internal/calculation/service"
 	"github.com/gorilla/mux"
 )
 
+// HistoryHandler handles HTTP requests for expense history queries.
 type HistoryHandler struct {
 	historyService *service.HistoryService
 }
 
+// NewHistoryHandler creates a new HistoryHandler.
 func NewHistoryHandler(hs *service.HistoryService) *HistoryHandler {
 	return &HistoryHandler{historyService: hs}
 }
 
+// Query handles GET requests listing expenses by settlement or date range.
 func (h *HistoryHandler) Query(w http.ResponseWriter, r *http.Request) {
 	householdID, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
@@ -70,5 +74,7 @@ func (h *HistoryHandler) Query(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(expenses)
+	// Response headers are already committed; nothing useful to do on
+	// write failure (Constitution #11).
+	json.NewEncoder(w).Encode(expenses) //nolint:errcheck // response already committed
 }

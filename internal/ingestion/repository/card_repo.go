@@ -1,3 +1,4 @@
+// Package repository defines persistence interfaces for the ingestion context.
 package repository
 
 import (
@@ -5,6 +6,7 @@ import (
 	"freek/internal/ingestion/domain"
 )
 
+// CardRepository persists and queries household credit cards.
 type CardRepository interface {
 	Create(ctx context.Context, card *domain.CreditCard) error
 	GetByID(ctx context.Context, id int64) (*domain.CreditCard, error)

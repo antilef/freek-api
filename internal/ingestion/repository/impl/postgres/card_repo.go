@@ -1,3 +1,4 @@
+// Package postgres implements ingestion repositories over PostgreSQL.
 package postgres
 
 import (
@@ -6,14 +7,17 @@ import (
 	"freek/internal/ingestion/domain"
 )
 
+// CardRepo ...
 type CardRepo struct {
 	db *sql.DB
 }
 
+// NewCardRepo creates a new CardRepo.
 func NewCardRepo(db *sql.DB) *CardRepo {
 	return &CardRepo{db: db}
 }
 
+// Create ...
 func (r *CardRepo) Create(ctx context.Context, card *domain.CreditCard) error {
 	query := `INSERT INTO credit_cards (household_id, name, closing_day, member_id, credit_limit)
 		VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at, updated_at`
@@ -21,6 +25,7 @@ func (r *CardRepo) Create(ctx context.Context, card *domain.CreditCard) error {
 		Scan(&card.ID, &card.CreatedAt, &card.UpdatedAt)
 }
 
+// GetByID ...
 func (r *CardRepo) GetByID(ctx context.Context, id int64) (*domain.CreditCard, error) {
 	query := `SELECT id, household_id, name, closing_day, member_id, credit_limit, created_at, updated_at
 		FROM credit_cards WHERE id = $1`
@@ -36,6 +41,7 @@ func (r *CardRepo) GetByID(ctx context.Context, id int64) (*domain.CreditCard, e
 	return c, nil
 }
 
+// ListByHousehold ...
 func (r *CardRepo) ListByHousehold(ctx context.Context, householdID int64) ([]domain.CreditCard, error) {
 	query := `SELECT id, household_id, name, closing_day, member_id, credit_limit, created_at, updated_at
 		FROM credit_cards WHERE household_id = $1 ORDER BY name`
@@ -43,7 +49,7 @@ func (r *CardRepo) ListByHousehold(ctx context.Context, householdID int64) ([]do
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var cards []domain.CreditCard
 	for rows.Next() {
@@ -59,6 +65,7 @@ func (r *CardRepo) ListByHousehold(ctx context.Context, householdID int64) ([]do
 	return cards, nil
 }
 
+// ListByMember ...
 func (r *CardRepo) ListByMember(ctx context.Context, householdID int64, memberID int64) ([]domain.CreditCard, error) {
 	query := `SELECT id, household_id, name, closing_day, member_id, credit_limit, created_at, updated_at
 		FROM credit_cards WHERE household_id = $1 AND member_id = $2 ORDER BY name`
@@ -66,7 +73,7 @@ func (r *CardRepo) ListByMember(ctx context.Context, householdID int64, memberID
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var cards []domain.CreditCard
 	for rows.Next() {
@@ -76,9 +83,13 @@ func (r *CardRepo) ListByMember(ctx context.Context, householdID int64, memberID
 		}
 		cards = append(cards, c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return cards, nil
 }
 
+// Update ...
 func (r *CardRepo) Update(ctx context.Context, card *domain.CreditCard) error {
 	query := `UPDATE credit_cards SET name = $1, closing_day = $2, member_id = $3, credit_limit = $4, updated_at = NOW()
 		WHERE id = $5`
@@ -86,12 +97,14 @@ func (r *CardRepo) Update(ctx context.Context, card *domain.CreditCard) error {
 	return err
 }
 
+// Delete ...
 func (r *CardRepo) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM credit_cards WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id)
 	return err
 }
 
+// HasExpenses ...
 func (r *CardRepo) HasExpenses(ctx context.Context, cardID int64) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM expenses WHERE credit_card_id = $1)`
 	var exists bool

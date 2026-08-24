@@ -7,18 +7,22 @@ import (
 	"freek/internal/ingestion/repository"
 )
 
+// CategoryService ...
 type CategoryService struct {
 	repo repository.CategoryRepository
 }
 
+// NewCategoryService creates a new CategoryService.
 func NewCategoryService(repo repository.CategoryRepository) *CategoryService {
 	return &CategoryService{repo: repo}
 }
 
+// ListByHousehold ...
 func (s *CategoryService) ListByHousehold(ctx context.Context, householdID int64) ([]domain.Category, error) {
 	return s.repo.ListByHousehold(ctx, householdID)
 }
 
+// Create ...
 func (s *CategoryService) Create(ctx context.Context, category *domain.Category) error {
 	exists, err := s.repo.ExistsByName(ctx, *category.HouseholdID, category.Name)
 	if err != nil {
@@ -30,6 +34,7 @@ func (s *CategoryService) Create(ctx context.Context, category *domain.Category)
 	return s.repo.Create(ctx, category)
 }
 
+// Update ...
 func (s *CategoryService) Update(ctx context.Context, category *domain.Category) error {
 	existing, err := s.repo.GetByID(ctx, category.ID)
 	if err != nil {
@@ -44,6 +49,7 @@ func (s *CategoryService) Update(ctx context.Context, category *domain.Category)
 	return s.repo.Update(ctx, category)
 }
 
+// Delete ...
 func (s *CategoryService) Delete(ctx context.Context, categoryID int64) error {
 	existing, err := s.repo.GetByID(ctx, categoryID)
 	if err != nil {
