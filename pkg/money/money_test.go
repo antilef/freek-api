@@ -119,3 +119,42 @@ func TestDivideRoundUp(t *testing.T) {
 		}
 	}
 }
+
+func TestTotalWithInterest(t *testing.T) {
+	tests := []struct {
+		amount    int64
+		rate      float64
+		expected  CLP
+	}{
+		{100000, 0, 100000},
+		{100000, 0.15, 115000},
+		{120000, 0, 120000},
+		{10000, 0.105, 11050}, // 10000 * 1.105 = 11050
+		{33333, 0.03, 34333},  // 33333 * 1.03 = 34332.99 → math.Round → 34333
+		{50000, -0.1, 50000},  // negative rate ignored
+	}
+
+	for _, tt := range tests {
+		result := TotalWithInterest(tt.amount, tt.rate)
+		if result != tt.expected {
+			t.Errorf("TotalWithInterest(%d, %v) = %d, want %d", tt.amount, tt.rate, int64(result), int64(tt.expected))
+		}
+	}
+}
+
+func TestMonthlyInstallment(t *testing.T) {
+	total := TotalWithInterest(100000, 0.15)
+	if total != 115000 {
+		t.Fatalf("TotalWithInterest = %d, want 115000", int64(total))
+	}
+
+	installment := MonthlyInstallment(total, 3)
+	if installment != 38334 { // 115000 / 3 = 38333.33 → rounds up
+		t.Errorf("MonthlyInstallment = %d, want 38334", int64(installment))
+	}
+
+	exact := MonthlyInstallment(120000, 6)
+	if exact != 20000 {
+		t.Errorf("MonthlyInstallment = %d, want 20000", int64(exact))
+	}
+}

@@ -2,6 +2,7 @@ package money
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -69,4 +70,15 @@ func DivideRoundUp(amount CLP, installments int) CLP {
 		perInstallment++
 	}
 	return CLP(perInstallment)
+}
+
+func TotalWithInterest(amountCLP int64, interestRate float64) CLP {
+	if interestRate <= 0 {
+		return CLP(amountCLP)
+	}
+	return CLP(math.Round(float64(amountCLP) * (1 + interestRate)))
+}
+
+func MonthlyInstallment(total CLP, installments int) CLP {
+	return DivideRoundUp(total, installments)
 }

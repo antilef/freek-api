@@ -12,6 +12,7 @@ import (
 	"freek/internal/ingestion/repository"
 	"freek/internal/ingestion/service"
 	"github.com/gorilla/mux"
+	"time"
 )
 
 type testExpenseRepo struct {
@@ -134,5 +135,101 @@ func TestExpenseHandler_List(t *testing.T) {
 
 	if len(expenses) != 0 {
 		t.Errorf("len(expenses) = %d, want 0", len(expenses))
+	}
+}
+
+func TestExpenseHandler_Update_InvalidAmount(t *testing.T) {
+	repo := &testExpenseRepo{}
+	svc := service.NewExpenseService(repo)
+	handler := NewExpenseHandler(svc)
+
+	seed := &domain.Expense{
+		ID:          1,
+		HouseholdID: 1,
+		AmountCLP:   50000,
+		Description: "Test",
+		PaymentType: domain.PaymentTypeCash,
+	}
+	repo.Create(context.Background(), seed)
+
+	body := `{"amount_clp":0,"description":"Test","payment_type":"cash"}`
+	req := httptest.NewRequest("PUT", "/api/v1/households/1/expenses/1", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	vars := map[string]string{"id": "1", "expense_id": "1"}
+	req = mux.SetURLVars(req, vars)
+
+	handler.Update(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
+	}
+}
+
+func TestExpenseHandler_Update_NotFound(t *testing.T) {
+	repo := &testExpenseRepo{}
+	svc := service.NewExpenseService(repo)
+	handler := NewExpenseHandler(svc)
+
+	body := `{"amount_clp":50000,"description":"Test","payment_type":"cash"}`
+	req := httptest.NewRequest("PUT", "/api/v1/households/1/expenses/999", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	vars := map[string]string{"id": "1", "expense_id": "999"}
+	req = mux.SetURLVars(req, vars)
+
+	handler.Update(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("status = %d, want %d", w.Code, http.StatusNotFound)
+	}
+}
+
+func TestExpenseHandler_Delete_NotFound(t *testing.T) {
+	repo := &testExpenseRepo{}
+	svc := service.NewExpenseService(repo)
+	handler := NewExpenseHandler(svc)
+
+	req := httptest.NewRequest("DELETE", "/api/v1/households/1/expenses/999", nil)
+	w := httptest.NewRecorder()
+
+	vars := map[string]string{"id": "1", "expense_id": "999"}
+	req = mux.SetURLVars(req, vars)
+
+	handler.Delete(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("status = %d, want %d", w.Code, http.StatusNotFound)
+	}
+}
+
+func TestExpenseHandler_Create_DefaultPurchaseDate(t *testing.T) {
+	repo := &testExpenseRepo{}
+	svc := service.NewExpenseService(repo)
+	handler := NewExpenseHandler(svc)
+
+	body := `{"amount_clp":50000,"description":"Test","payment_type":"cash","installments":1}`
+	req := httptest.NewRequest("POST", "/api/v1/households/1/expenses", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	vars := map[string]string{"id": "1"}
+	req = mux.SetURLVars(req, vars)
+
+	handler.Create(w, req)
+
+	if w.Code != http.StatusCreated {
+		t.Fatalf("status = %d, want %d", w.Code, http.StatusCreated)
+	}
+
+	var expense domain.Expense
+	json.NewDecoder(w.Body).Decode(&expense)
+
+	now := time.Now()
+	want := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	if !expense.PurchaseDate.Equal(want) {
+		t.Errorf("purchase_date = %v, want %v (today)", expense.PurchaseDate, want)
 	}
 }

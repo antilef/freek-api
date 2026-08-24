@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -122,7 +123,11 @@ func (h *ExpenseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	expense.ID = expenseID
 
 	if err := h.expenseService.Update(r.Context(), &expense); err != nil {
-		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusInternalServerError)
+		if errors.Is(err, service.ErrExpenseNotFound) {
+			http.Error(w, `{"error":"expense not found"}`, http.StatusNotFound)
+			return
+		}
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
 		return
 	}
 
@@ -138,6 +143,10 @@ func (h *ExpenseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.expenseService.Delete(r.Context(), expenseID); err != nil {
+		if errors.Is(err, service.ErrExpenseNotFound) {
+			http.Error(w, `{"error":"expense not found"}`, http.StatusNotFound)
+			return
+		}
 		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}

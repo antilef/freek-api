@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"freek/internal/calculation/domain"
 	calcRepo "freek/internal/calculation/repository"
+	"freek/pkg/money"
 	"time"
 )
 
@@ -47,8 +48,8 @@ func (r *ExpenseReadRepo) ListForProjection(ctx context.Context, householdID int
 		if err := rows.Scan(&e.ExpenseID, &e.Description, &amountCLP, &installments, &interestRate, &purchaseDate); err != nil {
 			return nil, err
 		}
-		total := float64(amountCLP) * (1 + interestRate)
-		e.MonthlyAmount = int64(total) / int64(installments)
+		total := money.TotalWithInterest(amountCLP, interestRate)
+		e.MonthlyAmount = int64(money.MonthlyInstallment(total, installments))
 		e.Amount = int64(total)
 		expenses = append(expenses, e)
 	}

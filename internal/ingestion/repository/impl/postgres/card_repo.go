@@ -53,6 +53,9 @@ func (r *CardRepo) ListByHousehold(ctx context.Context, householdID int64) ([]do
 		}
 		cards = append(cards, c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return cards, nil
 }
 
