@@ -13,5 +13,5 @@
 
 ## 4. Verification
 
-- [ ] 4.1 `actionlint` clean; push and confirm all three jobs green with `-race` in integration and coverage line visible in unit-tests logs
-- [ ] 4.2 Confirm Dependabot config is picked up (repo Settings → Dependabot, or first grouped PR within the cycle)
+- [x] 4.1 `actionlint` clean; push and confirm all three jobs green with `-race` in integration and coverage line visible in unit-tests logs
+- [x] 4.2 Confirm Dependabot config is picked up (repo Settings → Dependabot, or first grouped PR within the cycle)
