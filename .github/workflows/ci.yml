@@ -70,7 +70,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Install golang-migrate CLI
-        run: go install github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1
       - name: Apply migrations
         run: migrate -path migrations -database "$DATABASE_URL" up
       - name: Run tests
