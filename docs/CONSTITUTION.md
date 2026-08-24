@@ -61,3 +61,15 @@ premature abstractions, no dependencies beyond the existing stack
 Behavioral changes start as an OpenSpec change (proposal → design → tasks) and
 are implemented task by task. Code without tests, or tests requiring a database
 without `./up-db.sh`, do not merge. Run `go test ./...` and keep it green.
+
+## 11. Linter exclusions are last resort, always justified
+Every `//nolint` directive MUST carry a written reason and be scoped to a
+single line or symbol — never disable a linter globally to make findings go
+away. `nolintlint` enforces this mechanically. If code seems to need a new
+*category* of exclusion (a recurring pattern, not a one-off), that is a design
+decision: propose an OpenSpec change to amend the exclusion policy in
+`.golangci.yml`, don't sprinkle directives. Response-write errors are the
+canonical case: once headers are sent there is nothing useful to do except
+give up silently — encode with a documented `//nolint:errcheck`, never log-and-continue
+loops or swallowed errors elsewhere.
+
