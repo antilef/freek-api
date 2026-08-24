@@ -40,24 +40,6 @@ func (r *testHouseholdRepo) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-type testMemberRepo struct {
-	members []domain.Member
-}
-
-func (r *testMemberRepo) Create(ctx context.Context, m *domain.Member) error {
-	m.ID = int64(len(r.members) + 1)
-	r.members = append(r.members, *m)
-	return nil
-}
-
-func (r *testMemberRepo) ListByHousehold(ctx context.Context, householdID int64) ([]domain.Member, error) {
-	return r.members, nil
-}
-
-func (r *testMemberRepo) Delete(ctx context.Context, id int64) error {
-	return nil
-}
-
 func TestHouseholdHandler_Create(t *testing.T) {
 	repo := &testHouseholdRepo{}
 	svc := service.NewHouseholdService(repo)

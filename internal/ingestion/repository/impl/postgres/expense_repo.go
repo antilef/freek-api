@@ -87,7 +87,6 @@ func (r *ExpenseRepo) List(ctx context.Context, filter repository.ExpenseFilter)
 	if filter.Search != nil {
 		query += fmt.Sprintf(" AND (description ILIKE $%d OR notes ILIKE $%d)", argIdx, argIdx)
 		args = append(args, "%"+*filter.Search+"%")
-		argIdx++
 	}
 
 	query += " ORDER BY purchase_date DESC"

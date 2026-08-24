@@ -52,8 +52,8 @@ func (h *CardHandler) List(w http.ResponseWriter, r *http.Request) {
 	var cards []domain.CreditCard
 	memberIDStr := r.URL.Query().Get("member_id")
 	if memberIDStr != "" {
-		memberID, err := strconv.ParseInt(memberIDStr, 10, 64)
-		if err != nil {
+		memberID, parseErr := strconv.ParseInt(memberIDStr, 10, 64)
+		if parseErr != nil {
 			http.Error(w, `{"error":"invalid member_id"}`, http.StatusBadRequest)
 			return
 		}

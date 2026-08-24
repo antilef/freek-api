@@ -27,7 +27,6 @@ func (r *ExpenseReadRepo) ListForProjection(ctx context.Context, householdID int
 	if cardID != nil {
 		query += fmt.Sprintf(" AND credit_card_id = $%d", argIdx)
 		args = append(args, *cardID)
-		argIdx++
 	}
 
 	query += " ORDER BY purchase_date"
@@ -87,7 +86,6 @@ func (r *ExpenseReadRepo) ListByPeriod(ctx context.Context, filter calcRepo.Expe
 	if filter.Search != nil {
 		query += fmt.Sprintf(" AND (e.description ILIKE $%d OR e.notes ILIKE $%d)", argIdx, argIdx)
 		args = append(args, "%"+*filter.Search+"%")
-		argIdx++
 	}
 
 	query += " ORDER BY e.purchase_date DESC"
@@ -128,7 +126,6 @@ func (r *ExpenseReadRepo) SummaryByCategory(ctx context.Context, filter calcRepo
 	if filter.To != nil {
 		query += fmt.Sprintf(" AND e.purchase_date <= $%d", argIdx)
 		args = append(args, *filter.To)
-		argIdx++
 	}
 
 	query += " GROUP BY e.category_id, c.name ORDER BY total DESC"
@@ -166,7 +163,6 @@ func (r *ExpenseReadRepo) SummaryByMember(ctx context.Context, filter calcRepo.E
 	if filter.To != nil {
 		query += fmt.Sprintf(" AND e.purchase_date <= $%d", argIdx)
 		args = append(args, *filter.To)
-		argIdx++
 	}
 
 	query += " GROUP BY e.member_id, m.name ORDER BY total DESC"

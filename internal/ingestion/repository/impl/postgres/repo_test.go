@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"os"
 	"testing"
 	"time"
 
@@ -12,12 +13,18 @@ import (
 )
 
 func setupTestDB(t *testing.T) *sql.DB {
-	dbURL := "postgres://localhost:5432/freek_test?sslmode=disable"
+	dbURL := "postgres://postgres:postgres@localhost:5432/freek_test?sslmode=disable"
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
+		if os.Getenv("CI") == "1" {
+			t.Fatal("CI requires PostgreSQL, cannot open connection:", err)
+		}
 		t.Skip("Skipping: PostgreSQL not available:", err)
 	}
 	if err := db.Ping(); err != nil {
+		if os.Getenv("CI") == "1" {
+			t.Fatal("CI requires PostgreSQL, cannot connect:", err)
+		}
 		t.Skip("Skipping: Cannot connect to PostgreSQL:", err)
 	}
 

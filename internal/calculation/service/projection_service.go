@@ -4,7 +4,6 @@ import (
 	"context"
 	"freek/internal/calculation/domain"
 	calcRepo "freek/internal/calculation/repository"
-	"freek/pkg/money"
 	"time"
 )
 
@@ -101,12 +100,4 @@ func (s *ProjectionService) ProjectAll(ctx context.Context, householdID int64, m
 		Total:        total,
 		MonthlyTotals: monthlyTotals,
 	}, nil
-}
-
-func (s *ProjectionService) calculateMonthlyAmount(amountCLP int64, installments int, interestRate float64) money.CLP {
-	total := money.CLP(amountCLP)
-	if interestRate > 0 {
-		total = money.CLP(float64(total) * (1 + interestRate))
-	}
-	return money.DivideRoundUp(total, installments)
 }
